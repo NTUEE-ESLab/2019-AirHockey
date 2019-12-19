@@ -10,6 +10,9 @@ from const import *
 from bluepy.btle import Peripheral, UUID
 from bluepy.btle import Scanner, DefaultDelegate
 
+keys = {K_LEFT : False, K_RIGHT : False, K_UP : False, K_DOWN : False, button1 = False, \
+        K_a : False, K_d : False, K_w : False, K_s : False, button2 = False}
+
 class ScanDelegate(DefaultDelegate):
 	def __init__(self):
 		DefaultDelegate.__init__(self)
@@ -19,6 +22,13 @@ class ScanDelegate(DefaultDelegate):
 			print ("Discovered device", dev.addr)
 		elif isNewData:
 			print ("Received new data from", dev.addr)
+
+class MyDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+    
+    def handleNotification(self, cHandle, data):
+        print(int.from_bytes(data, byteorder='big'))
 
 def init(angle=0):
     player1.set_pos_xy(PLAYER1_START)
@@ -34,10 +44,14 @@ def init(angle=0):
         chrono.reset()
 
 def get_action():
+    if dev1.waitForNotification(FPS / 1000):
+        pass
+    # if dev2.waitForNotification(FPS / 1000):
+    #     pass
     # action_dict[K_LEFT] = 
 
 
-def game():
+def game(dev1, dev2):
 
     init()
 
@@ -49,6 +63,7 @@ def game():
                 sys.exit()
           
         # keys = pygame.key.get_pressed()
+
         get_action()
         if keys[ K_LEFT]: x1 = -1.0    
         elif keys[ K_RIGHT]: x1 = 1.0  
@@ -156,36 +171,32 @@ def instruction_screen():
         if keys[ K_ESCAPE]:
             break
         
-scanner = Scanner().withDelegate(ScanDelegate())
-devices = scanner.scan(10.0)
-
-for i, dev in enumerate(devices):
-	print("%d: Device %s (%s), RSSI = %d dB" %(i, dev.addr, dev.addrType, dev.rssi))	
-	for (adtype, desc, value) in dev.getScanData():
-		print (" %s = %s" %(desc, value))
-
-number = input("Enter your device number: ")
-print (('Device', number))
-print ((devices[number].addr))
 
 print ("Connecting . . . ")
-dev = Peripheral(devices[number].addr, 'random')
+dev1 = Peripheral('e2:da:5e:a1:3b:af', 'random')
+dev1.setDeligate(MyDelegate())
+# dev2 = Peripheral('e2:da:5e:a1:3b:af', 'random')
+# dev2.setDeligate(MyDelegate())
 
-print ("Services . . .")
-for svc in dev.services:
-	print (str(svc))
+# print ("Services . . .")
+# for svc in dev1.services:
+# 	print (str(svc))
 
-# try:
-# 	testService = dev.getServiceByUUID(UUID(0xfff0))
-# 	for ch in testService.getCharacteristics():
-# 		print (str(ch))
+try:
+	testService1 = dev1.getServiceByUUID(UUID(0x180d))
+    # testService2 = dev2.getServiceByUUID(UUID(0x180d))
 
-# 	ch = dev.getCharacteristics(uuid=UUID(0xfff1))[0]
-# 	if ch.supportsRead():
-# 		print (ch.read())
-	
-# finally:
-# 	dev.disconnect()
+	# for ch in testService1.getCharacteristics():
+	# 	print (str(ch))
+	ch1 = dev1.getCharacteristics(uuid=UUID(0x2a37))[0]
+    # Data_handle1 = ch1.getHandle()
+    # ch2 = dev2.getCharacteristics(uuid=UUID(0x2a37))[0]
+    # Data_handle2 = ch2.getHandle()
+    
+finally:
+    dev1.disconnect()
+	# dev2.disconnect()
+
 keys = {K_LEFT : False, K_RIGHT : False, K_UP : False, K_DOWN : False, \
         K_a : False, K_d : False, K_w : False, K_s : False}
 
@@ -253,7 +264,7 @@ while 1:
     elif keys[ K_3]: time = 3
     elif keys[ K_5]: time = 5
     if time>0:#<>0:
-        game()
+        game(dev1, dev2)
     elif keys[ K_F1]:
         instruction_screen()
                     
