@@ -44,9 +44,9 @@ def init(angle=0):
         chrono.reset()
 
 def get_action():
-    if dev1.waitForNotification(FPS / 1000):
+    if dev1.waitForNotification(FPS / 6000):
         pass
-    # if dev2.waitForNotification(FPS / 1000):
+    # if dev2.waitForNotification(FPS / 6000):
     #     pass
     # action_dict[K_LEFT] = 
 
