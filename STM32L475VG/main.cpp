@@ -101,7 +101,7 @@ public:
 
     void update() {
         // pc.printf("Waiting at Sensors::update...\n");
-        sem.wait();
+        // sem.wait();
         // pc.printf("Enter Sensors::update\n");
         // pc.printf("Start updating...\n");
         // socket.set_blocking(1);
@@ -161,7 +161,7 @@ public:
         calculate(_pGyroDataXYZ, _pAccDataXYZ);
 
         // }
-        sem.release();
+        // sem.release();
         // pc.printf("Release sem at Sensors::udpate\n");
     }
 
@@ -353,7 +353,7 @@ private:
             uint8_t right = 0, up = 0, angle = 0;
 
             // pc.printf("Waiting at MyDemo::send_sensor_value...\n");
-            sem.wait();
+            // sem.wait();
             // pc.printf("Enter MyDemo::send_sensor_value\n");
             
             // pc.printf("Getting dierction info...\n");
@@ -363,7 +363,7 @@ private:
             _sensor->getAngle(angle);
             // pc.printf("_sensor->getAngle(angle)");
             
-            sem.release();
+            // sem.release();
             // pc.printf("Release sem at MyDemo::send_sensor_value\n");
 
             // pc.printf("Updating info...\n");
