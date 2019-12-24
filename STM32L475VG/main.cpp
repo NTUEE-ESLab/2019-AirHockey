@@ -27,7 +27,7 @@
 const static char DEVICE_NAME[] = "Hockey";
 
 Serial pc(USBTX, USBRX);
-Semaphore sem(0);
+Semaphore sem(1);
 
 Thread t_sensor;
 Thread t_ble;
@@ -100,9 +100,9 @@ public:
     }
 
     void update() {
-        pc.printf("Waiting at Sensors::update...\n");
+        // pc.printf("Waiting at Sensors::update...\n");
         sem.wait();
-        pc.printf("Enter Sensors::update\n");
+        // pc.printf("Enter Sensors::update\n");
         // pc.printf("Start updating...\n");
         // socket.set_blocking(1);
 
@@ -162,22 +162,22 @@ public:
 
         // }
         sem.release();
-        pc.printf("Release sem at Sensors::udpate\n");
+        // pc.printf("Release sem at Sensors::udpate\n");
     }
 
     void getDirection(uint8_t& right, uint8_t& up) {
         // if (sample_num % 100 == 0) {
-        pc.printf("In Sensors::getDirection...\n");
+        // pc.printf("In Sensors::getDirection...\n");
 
-        pc.printf("%f\n", abs(_velocity[0]));
-        if  (abs(_velocity[0]) > 1.0)
-            pc.printf("%f\n", _velocity[0]);
-        else pc.printf("ha1\n");
+        // pc.printf("%f\n", abs(_velocity[0]));
+        // if  (abs(_velocity[0]) > 1.0)
+        //     pc.printf("%f\n", _velocity[0]);
+        // else pc.printf("ha1\n");
 
-        if  (abs(_velocity[0]) > 1)
-            pc.printf("%f\n", _velocity[0]);
-        else pc.printf("ha2\n");
-/*        
+        // if  (abs(_velocity[0]) > 1)
+        //     pc.printf("%f\n", _velocity[0]);
+        // else pc.printf("ha2\n");
+     
         if (abs(_velocity[0]) > 1) {
             if (_velocity[0] > 0) {
                 pc.printf("%5s ", "left");
@@ -209,7 +209,7 @@ public:
         pc.printf("\n");
         
         // }
-*/
+
     }
 
     // returns angle / 2 due to 8 bit
@@ -261,6 +261,7 @@ public:
         _connected(false),
         _uuid(GattService::UUID_MY_SERVICE),
         _service(ble, right, up, angle),
+        _sensor(sensor),
         _adv_data_builder(_adv_buffer) { }
 
     void start() {
@@ -300,7 +301,7 @@ private:
         );
 
         _adv_data_builder.setFlags();
-        _adv_data_builder.setAppearance(ble::adv_data_appearance_t::GENERIC_HEART_RATE_SENSOR);
+        _adv_data_builder.setAppearance(ble::adv_data_appearance_t::HUMAN_INTERFACE_DEVICE_HID);
         _adv_data_builder.setLocalServiceList(mbed::make_Span(&_uuid, 1));
         _adv_data_builder.setName(DEVICE_NAME);
 
@@ -339,7 +340,7 @@ private:
     void send_sensor_value() {
         pc.printf("%d\n", _connected);
         if (_connected) {
-            pc.printf("haha\n");
+            // pc.printf("haha\n");
             // Do blocking calls or whatever is necessary for sensor polling.
             // In our case, we simply update the HRM measurement.
             // _hr_counter++;
@@ -349,23 +350,25 @@ private:
             //     _hr_counter = 100;
             // }
 
-            uint8_t right, up, angle;
+            uint8_t right = 0, up = 0, angle = 0;
 
-            pc.printf("Waiting at MyDemo::send_sensor_value...\n");
+            // pc.printf("Waiting at MyDemo::send_sensor_value...\n");
             sem.wait();
-            pc.printf("Enter MyDemo::send_sensor_value\n");
+            // pc.printf("Enter MyDemo::send_sensor_value\n");
             
-            pc.printf("Getting dierction info...\n");
+            // pc.printf("Getting dierction info...\n");
             _sensor->getDirection(right, up);
-            pc.printf("Getting angle info...\n");
+            // pc.printf("_sensor->getDirection(right, up)");
+            // pc.printf("Getting angle info...\n");
             _sensor->getAngle(angle);
+            // pc.printf("_sensor->getAngle(angle)");
             
             sem.release();
-            pc.printf("Release sem at MyDemo::send_sensor_value\n");
+            // pc.printf("Release sem at MyDemo::send_sensor_value\n");
 
-            pc.printf("Updating info...\n");
+            // pc.printf("Updating info...\n");
             _service.updateInfo(right, up, angle);
-            pc.printf("%d, %d, %d\n", right, up, angle);
+            // pc.printf("%d, %d, %d\n", right, up, angle);
         }
     }
 

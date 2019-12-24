@@ -263,8 +263,8 @@ public:
          * Characteristic of that sends direction and angle measurements to
          * registered clients.
          */
-        UUID_MY_SERVICE_CHAR = 0x2A37,
-        // UUID_MY_SERVICE_CHAR = 0xA000,
+        // UUID_MY_SERVICE_CHAR = 0x2A37,
+        UUID_MY_SERVICE_CHAR = 0xA000,
 
         /**
          * Part of the Human Interface Device service.

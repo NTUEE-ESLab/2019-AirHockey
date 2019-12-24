@@ -91,8 +91,8 @@ public:
         /**
          * UUID of the My service.
          */
-        UUID_MY_SERVICE = 0x180D,
-        // UUID_MY_SERVICE = 0xA001,
+        // UUID_MY_SERVICE = 0x180D,
+        UUID_MY_SERVICE = 0xA001,
 
         /**
          * UUID of the Human Interface Device (HID) service.
