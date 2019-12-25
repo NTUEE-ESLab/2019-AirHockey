@@ -24,6 +24,8 @@
 #include "stm32l475e_iot01_accelero.h"
 #include "stm32l475e_iot01_gyro.h"
 
+#define PLAYER_NUM 0
+
 const static char DEVICE_NAME[] = "Hockey";
 
 Serial pc(USBTX, USBRX);
@@ -49,7 +51,7 @@ public:
         for (int i = 0; i < 3; ++i) {
             if (abs(pGyroDataXYZ[i]) > 15)
                 _angle[i] += (pGyroDataXYZ[i] + _GyroAccumulate[i]) / 2 * TIMESTEP * SCALE_MULTIPLIER;
-            if (abs(pAccDataXYZ[i]) > 10) {
+            if (abs(pAccDataXYZ[i]) > 5 && pAccDataXYZ[i] * _velocity[i] >= 0) {
                 _velocity[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP;
                 _position[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP * TIMESTEP / 2;
             } else _velocity[i] = 0;
@@ -143,14 +145,14 @@ public:
         if (_sample_num % 100 == 0) {
             if (abs(_velocity[0]) > 1) {
                 if (_velocity[0] > 0)
-                    pc.printf("%5s ", "left");
-                else pc.printf("%5s ", "right");
+                    pc.printf("%5s ", "back");
+                else pc.printf("%5s ", "front");
             } else pc.printf("still ");
 
             if (abs(_velocity[1]) > 1) {
                 if (_velocity[1] > 0)
-                    pc.printf("%5s\n", "back");
-                else pc.printf("%5s\n", "front");
+                    pc.printf("%5s\n", "right");
+                else pc.printf("%5s\n", "left");
             } else pc.printf("still\n");
 
             pc.printf("\n");
@@ -177,38 +179,43 @@ public:
         // if  (abs(_velocity[0]) > 1)
         //     pc.printf("%f\n", _velocity[0]);
         // else pc.printf("ha2\n");
-     
+        
+
         if (abs(_velocity[0]) > 1) {
-            if (_velocity[0] > 0) {
-                pc.printf("%5s ", "left");
-                right = 2;
+            if (_velocity[0] < 0) {
+                pc.printf("%5s ", "back");
+                up = 2;
             }
             else {
-                pc.printf("%5s ", "right");
-                right = 1;
+                pc.printf("%5s ", "front");
+                up = 1;
             }
         } else {
             pc.printf("still ");
-            right = 0;
+            up = 0;
         }
 
         if (abs(_velocity[1]) > 1) {
             if (_velocity[1] > 0) {
-                pc.printf("%5s\n", "back");
-                up = 2;
+                pc.printf("%5s\n", "right");
+                right = 1;
             }
             else {
-                pc.printf("%5s\n", "front");
-                up = 1;
+                pc.printf("%5s\n", "left");
+                right = 2;
             }
         } else {
             pc.printf("still\n");
-            up = 0;
+            right = 0;
         }
 
         pc.printf("\n");
         
         // }
+        up = (uint8_t)_velocity[0];
+        right = (uint8_t)_velocity[1];
+
+        pc.printf("%d %d\n", up, right);
 
     }
 
@@ -254,13 +261,13 @@ private:
 
 class MyDemo : ble::Gap::EventHandler {
 public:
-    MyDemo(BLE &ble, events::EventQueue &event_queue, uint8_t right, uint8_t up, uint8_t angle, Sensors * sensor) :
+    MyDemo(BLE &ble, events::EventQueue &event_queue, uint8_t player, Sensors * sensor) :
         _ble(ble),
         _event_queue(event_queue),
         _led1(LED1, 1),
         _connected(false),
         _uuid(GattService::UUID_MY_SERVICE),
-        _service(ble, right, up, angle),
+        _service(ble, player),
         _sensor(sensor),
         _adv_data_builder(_adv_buffer) { }
 
@@ -338,7 +345,7 @@ private:
     }
 
     void send_sensor_value() {
-        pc.printf("%d\n", _connected);
+        // pc.printf("%d\n", _connected);
         if (_connected) {
             // pc.printf("haha\n");
             // Do blocking calls or whatever is necessary for sensor polling.
@@ -367,7 +374,10 @@ private:
             // pc.printf("Release sem at MyDemo::send_sensor_value\n");
 
             // pc.printf("Updating info...\n");
-            _service.updateInfo(right, up, angle);
+            // if (0 != right || 0 != up
+            if (1) {
+                _service.updateInfo(right, up, angle);
+            }
             // pc.printf("%d, %d, %d\n", right, up, angle);
         }
     }
@@ -405,6 +415,10 @@ private:
 
     uint8_t _adv_buffer[ble::LEGACY_ADVERTISING_MAX_SIZE];
     ble::AdvertisingDataBuilder _adv_data_builder;
+
+    uint8_t _right;
+    uint8_t _up;
+    uint8_t _angle;
 };
 
 /** Schedule processing of events from the BLE middleware in the event queue. */
@@ -422,7 +436,7 @@ int main()
     BLE &ble = BLE::Instance();
     ble.onEventsToProcess(schedule_ble_events);
 
-    MyDemo demo(ble, event_queue, 0, 0, 0, &sensor);
+    MyDemo demo(ble, event_queue, PLAYER_NUM, &sensor);
     demo.start();
     pc.printf("Demo started!\n");
 

@@ -117,9 +117,9 @@ public:
      * sensor.
      * @param[in] location Intended location of the heart rate sensor.
      */
-    MyService(BLE &_ble, uint8_t right, uint8_t up, uint8_t angle /*, BodySensorLocation location */) :
+    MyService(BLE &_ble, uint8_t player /*, BodySensorLocation location */) :
         ble(_ble),
-        valueBytes(right, up, angle),
+        valueBytes(player),
         ch(
             // GattCharacteristic::UUID_HEART_RATE_MEASUREMENT_CHAR,
             GattCharacteristic::UUID_MY_SERVICE_CHAR,
@@ -194,15 +194,16 @@ protected:
      */
     struct MyValueBytes {
         /* 1 byte for the Flags, and up to two bytes for heart rate value. */
-        static const unsigned MAX_VALUE_BYTES = 3;
+        static const unsigned MAX_VALUE_BYTES = 4;
         // static const unsigned FLAGS_BYTE_INDEX = 0;
 
         // static const unsigned VALUE_FORMAT_BITNUM = 0;
         // static const uint8_t  VALUE_FORMAT_FLAG = (1 << VALUE_FORMAT_BITNUM);
 
-        MyValueBytes(uint8_t right, uint8_t up, uint8_t angle) : valueBytes()
+        MyValueBytes(uint8_t player) : valueBytes()
         {
-            updateInfo(right, up, angle);
+            updateInfo(0, 0, 0);
+            valueBytes[3] = player;
         }
 
         void updateInfo(uint8_t right, uint8_t up, uint8_t angle)
