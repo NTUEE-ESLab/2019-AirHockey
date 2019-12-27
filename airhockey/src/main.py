@@ -9,10 +9,11 @@ from Disc import Disc
 from const import *
 from bluepy.btle import Peripheral, UUID
 from bluepy.btle import Scanner, DefaultDelegate
+import threading
 
 keys = {K_LEFT : False, K_RIGHT : False, K_UP : False, K_DOWN : False,  \
 		K_a : False, K_d : False, K_w : False, K_s : False}
-
+num = 0
 actions = [ [0, 0, 0], [0, 0, 0] ]
 class ScanDelegate(DefaultDelegate):
 	def __init__(self):
@@ -29,6 +30,7 @@ class MyDelegate(DefaultDelegate):
 		DefaultDelegate.__init__(self)
 	
 	def handleNotification(self, cHandle, data):
+		pass
 		#print(int.from_bytes(data, byteorder='big'))
 		data = int.from_bytes(data, byteorder='big')
 		update( data )
@@ -56,13 +58,25 @@ def init(angle=0):
 		player2.set_point(0)
 		chrono.reset()
 
-def get_action():
+'''def get_action():
 	if not dev1.waitForNotifications(0.002):
 		pass#actions[0] = [0, 0, 0]
 
 	# if dev2.waitForNotifications(FPS / 6000):
 	#	 pass
 	# action_dict[K_LEFT] = 
+'''
+def get_action0():
+	while 1:
+		if not dev1.waitForNotifications(0.002):
+			pass
+
+def get_action1():
+	while 1:
+		if not dev2.waitForNotifications(0.002):
+			pass
+		
+			
 
 
 def game(dev1, dev2):
@@ -78,8 +92,9 @@ def game(dev1, dev2):
 		  
 		keys = pygame.key.get_pressed()
 
-		get_action()
+		#get_action()
 		if pygame.key.get_pressed()[K_ESCAPE]:
+			print(num)
 			sys.exit()
 		'''if actions[0][0] == 1: x1 = 1.0
 		elif actions[0][0] == 2: x1 = -1.0
@@ -96,15 +111,17 @@ def game(dev1, dev2):
 		elif keys[ K_DOWN]: y1 = 1.0	   
 		else: y1 = 0.0	 
 		'''
-		if keys[ K_a]: x2 = -1.0	
+		'''if keys[ K_a]: x2 = -1.0	
 		elif keys[ K_d]: x2 = 1.0  
 		else: x2 = 0.0				  
 		if keys[ K_w]: y2 = -1.0		  
 		elif keys[ K_s]: y2 = 1.0	   
 		else: y2 = 0.0
+		'''
+		x2, y2 = actions[1][0], actions[1][1]
 		if keys[ K_SPACE]: break
 		
-		dt = clock.tick(FPS*5)
+		dt = clock.tick(FPS)
 
 		chrono.add_millisecond(dt)
 
@@ -197,19 +214,20 @@ def instruction_screen():
 			break
 		
 
-print ("Connecting . . . ")
+print ("Connecting 1. . . ")
 dev1 = Peripheral('e2:da:5e:a1:3b:af', 'random')
 dev1.setDelegate(MyDelegate())
-# dev2 = Peripheral('e2:da:5e:a1:3b:af', 'random')
-# dev2.setDeligate(MyDelegate())
+print('Connecting 2...')
+dev2 = Peripheral('dd:45:3e:f8:2f:28', 'random')
+dev2.setDelegate(MyDelegate())
 
 # print ("Services . . .")
 # for svc in dev1.services:
 # 	print (str(svc))
 
 try:
-	testService1 = dev1.getServiceByUUID(UUID(0xa001))
-	# testService2 = dev2.getServiceByUUID(UUID(0x180d))
+	#testService1 = dev1.getServiceByUUID(UUID(0xa001))
+	#testService2 = dev2.getServiceByUUID(UUID(0xa001))
 
 	# for ch in testService1.getCharacteristics():
 	# 	print (str(ch))
@@ -217,22 +235,29 @@ try:
 	Data_handle1 = ch1.getHandle()
 	dev1.writeCharacteristic( Data_handle1+1, b'\x01\x00', withResponse = True )
 	# Data_handle1 = ch1.getHandle()
-	# ch2 = dev2.getCharacteristics(uuid=UUID(0x2a37))[0]
-	# Data_handle2 = ch2.getHandle()
+	ch2 = dev2.getCharacteristics(uuid=UUID(0xa000))[0]
+	Data_handle2 = ch2.getHandle()
+	dev2.writeCharacteristic( Data_handle2+1, b'\x01\x00', withResponse = True )
+	
 except Exception as inst:
 	print(type(inst))
 	dev1.disconnect()
-	# dev2.disconnect()
+	dev2.disconnect()
 
-keys = {K_LEFT : False, K_RIGHT : False, K_UP : False, K_DOWN : False, \
-		K_a : False, K_d : False, K_w : False, K_s : False}
+#keys = {K_LEFT : False, K_RIGHT : False, K_UP : False, K_DOWN : False, \
+#			K_a : False, K_d : False, K_w : False, K_s : False}
 '''
-while 1:
-	if dev1.waitForNotifications(0.004):
-		#print ('Notification')
-		continue
-	#print ('Waiting')
-'''
+try:
+	while 1:
+		if dev2.waitForNotifications(1):
+			#print ('Notification')
+			num += 1
+			#print(num)
+			continue
+		#print ('Waiting')
+except Exception: 
+	print(num)
+'''	
 pygame.init()
 
 mixer = pygame.mixer
@@ -276,6 +301,11 @@ select_time_label = font1.render(select_time, 1, (0,0,0))
 instruction = INSTRUCTION
 instruction_label = font1.render(instruction, 1, (0,0,0))
 	
+t0 = threading.Thread(target = get_action0)
+t1 = threading.Thread(target = get_action1)
+t0.start()
+t1.start()
+
 while 1:
 	screen.blit( bg, (0,0))
 	screen.blit(title_game_label,(WIDTH*0.5-title_game_label.get_width()*0.5,200))
@@ -300,4 +330,3 @@ while 1:
 		game(dev1, None)#dev2)
 	elif keys[ K_F1]:
 		instruction_screen()					
-
