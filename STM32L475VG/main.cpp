@@ -25,11 +25,13 @@
 #include "stm32l475e_iot01_gyro.h"
 
 #define PLAYER_NUM 0
+#define SEND_INTERVAL 10
 
 const static char DEVICE_NAME[] = "Hockey";
 
 Serial pc(USBTX, USBRX);
 Semaphore sem(1);
+InterruptIn button(USER_BUTTON);
 
 Thread t_sensor;
 Thread t_ble;
@@ -45,22 +47,30 @@ public:
         BSP_GYRO_Init();
         align();
         _event_queue.call_every(1, this, &Sensors::update);
+        // button.fall(Callback<void()>(this, &Sensors::align));
     }
 
     void calculate(float * pGyroDataXYZ, int16_t * pAccDataXYZ) {
         for (int i = 0; i < 3; ++i) {
+            float v = _velocity[i];
             if (abs(pGyroDataXYZ[i]) > 15)
                 _angle[i] += (pGyroDataXYZ[i] + _GyroAccumulate[i]) / 2 * TIMESTEP * SCALE_MULTIPLIER;
-            if (abs(pAccDataXYZ[i]) > 5 && pAccDataXYZ[i] * _velocity[i] >= 0) {
+            if (abs(pAccDataXYZ[i]) > 3 /*&& pAccDataXYZ[i] * _velocity[i] >= 0*/) {
                 _velocity[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP;
-                _position[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP * TIMESTEP / 2;
-            } else _velocity[i] = 0;
+                _position[i] = (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP * TIMESTEP / 2;
+            } else _velocity[i] *= 0.5;
+
+
+            if (v * _velocity[i] < 0)
+                _velocity[i] = 0;
 
             // if (abs(pAccDataXYZ[i] - AccAccumulate[i]) < 2)
             //     velocity[i] = 0;
             
             _position[i] += _velocity[i] * TIMESTEP;
         }
+        if (abs(pAccDataXYZ[2]) > 10)
+            _velocity[0] = _velocity[1] = 0;
 
         for (int i = 0; i < 3; ++i) {
             _GyroAccumulate[i] = pGyroDataXYZ[i];
@@ -71,34 +81,35 @@ public:
 
     void align() {
         pc.printf("Aligning...\n");
+        int num = 0;
 
-        while (_sample_num < 2000) {
-            _sample_num++;
+        for (int i = 0; i < 3; ++i) 
+            _GyroOffset[i] = _AccOffset[i] = 0;
+
+        while (num < 2000) {
+            num++;
             BSP_GYRO_GetXYZ(_pGyroDataXYZ);
             BSP_ACCELERO_AccGetXYZ(_pAccDataXYZ);
             for (int i = 0; i < 3; ++i) {
                 _GyroOffset[i] += _pGyroDataXYZ[i];
                 _AccOffset[i] += _pAccDataXYZ[i];
             }
-
             wait(TIMESTEP);
         }
 
-        for (int i = 0; i < 3; ++i)
-            pc.printf("%d ", _AccOffset[i]);
-        pc.printf("\n");
-
         for (int i = 0; i < 3; ++i) {
-            _GyroOffset[i] /= _sample_num;
-            _AccOffset[i] /= _sample_num;
+            _GyroOffset[i] /= num;
+            _AccOffset[i] /= num;
+
+            _angle[i] = _velocity[i] = _position[i] = _pAccDataXYZ[i] = _pGyroDataXYZ[i] = 0;
         }
+
 
         for (int i = 0; i < 3; ++i)
             pc.printf("%d ", _AccOffset[i]);
         pc.printf("\n");
 
         pc.printf("Done alignment\n");
-        _sample_num = 0;
     }
 
     void update() {
@@ -162,6 +173,8 @@ public:
     
         calculate(_pGyroDataXYZ, _pAccDataXYZ);
 
+        _accumulateAcc[0] += _velocity[0];
+        _accumulateAcc[1] += _velocity[1];
         // }
         // sem.release();
         // pc.printf("Release sem at Sensors::udpate\n");
@@ -212,10 +225,14 @@ public:
         pc.printf("\n");
         
         // }
-        up = (uint8_t)_velocity[0];
-        right = (uint8_t)_velocity[1];
+        up = (uint8_t)(_velocity[0]);
+        right = (uint8_t)(_velocity[1]);
+        // up = (uint8_t) _accumulateAcc[0];
+        // right = (uint8_t) _accumulateAcc[1];
+        
+        _accumulateAcc[0] = _accumulateAcc[1] = 0;
 
-        pc.printf("%d %d\n", up, right);
+        pc.printf("send: %d %d\n", up, right);
 
     }
 
@@ -238,6 +255,8 @@ private:
 
     int   _AccOffset[3] = {};
     float _GyroOffset[3] = {};
+
+    int16_t _accumulateAcc[2] = {};
 
     events::EventQueue &_event_queue;
 };
@@ -269,7 +288,7 @@ public:
         _uuid(GattService::UUID_MY_SERVICE),
         _service(ble, player),
         _sensor(sensor),
-        _adv_data_builder(_adv_buffer) { }
+        _adv_data_builder(_adv_buffer) { _send_count = 0; }
 
     void start() {
         _ble.gap().setEventHandler(this);
@@ -278,7 +297,7 @@ public:
 
         _event_queue.call_every(500, this, &MyDemo::blink);
         pc.printf("_event_queue setup blink\n");
-        _event_queue.call_every(1, this, &MyDemo::send_sensor_value);
+        _event_queue.call_every(SEND_INTERVAL, this, &MyDemo::send_sensor_value);
         pc.printf("_event_queue setup update_sensor_value\n");
 
         // _event_queue.dispatch_forever();
@@ -379,6 +398,8 @@ private:
                 _service.updateInfo(right, up, angle);
             }
             // pc.printf("%d, %d, %d\n", right, up, angle);
+            ++_send_count;
+            pc.printf("%lld\n", _send_count);
         }
     }
 
@@ -419,6 +440,7 @@ private:
     uint8_t _right;
     uint8_t _up;
     uint8_t _angle;
+    uint64_t _send_count;
 };
 
 /** Schedule processing of events from the BLE middleware in the event queue. */
@@ -426,15 +448,30 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
     event_queue.call(Callback<void()>(&context->ble, &BLE::processEvents));
 }
 
+
+
+Sensors sensor(event_queue);
+
+void align() {
+    event_queue.call(callback(&sensor, &Sensors::align));
+    // sem.release();
+    // pc.printf("Align...\n");
+}
+
 int main()
 {
     pc.baud(115200);
     pc.printf("Program start\n");
 
-    Sensors sensor(event_queue);
+    // button.fall(Callback<void()>(&sensor, &Sensors::align));
+    // button.fall(&align);
 
     BLE &ble = BLE::Instance();
     ble.onEventsToProcess(schedule_ble_events);
+
+    // Thread eventThread;
+    // eventThread.start(callback(&event_queue, &EventQueue::dispatch_forever));
+    button.fall(&align);
 
     MyDemo demo(ble, event_queue, PLAYER_NUM, &sensor);
     demo.start();
