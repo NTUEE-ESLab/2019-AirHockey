@@ -30,7 +30,6 @@ class MyDelegate(DefaultDelegate):
 		DefaultDelegate.__init__(self)
 	
 	def handleNotification(self, cHandle, data):
-		pass
 		#print(int.from_bytes(data, byteorder='big'))
 		data = int.from_bytes(data, byteorder='big')
 		update( data )
@@ -68,12 +67,12 @@ def init(angle=0):
 '''
 def get_action0():
 	while 1:
-		if not dev1.waitForNotifications(0.002):
+		if not dev1.waitForNotifications(0.015):
 			pass
 
 def get_action1():
 	while 1:
-		if not dev2.waitForNotifications(0.002):
+		if not dev2.waitForNotifications(0.015):
 			pass
 		
 			
@@ -249,15 +248,16 @@ except Exception as inst:
 '''
 try:
 	while 1:
-		if dev2.waitForNotifications(1):
+		if dev2.waitForNotifications(0.015):
 			#print ('Notification')
 			num += 1
+			print(actions)
 			#print(num)
 			continue
 		#print ('Waiting')
 except Exception: 
 	print(num)
-'''	
+'''
 pygame.init()
 
 mixer = pygame.mixer
