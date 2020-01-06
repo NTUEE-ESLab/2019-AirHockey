@@ -23,10 +23,10 @@ Serial pc(USBTX, USBRX);
 InterruptIn button(USER_BUTTON);
 
 
-#define IP_ADDR     "192.168.1.233"
+#define IP_ADDR     "192.168.0.15"
 #define PORT_NUM    6688
 #define SEND_INT    1
-#define SAMPLE_RATE 1
+#define SAMPLE_RATE 2
 #define PLAYER      0
 
 static events::EventQueue event_queue(/* event count */ 16 * EVENTS_EVENT_SIZE);
@@ -280,7 +280,7 @@ public:
             return;
         }
 
-        result = _socket.connect(IP_ADDR, PORT_NUM);
+        result = _socket.connect(IP_ADDR);//, PORT_NUM);
         if (result != 0) {
             printf("Error! socket.connect() returned: %d\n", result);
             // Close the socket to return its memory and bring down the network interface
@@ -301,16 +301,17 @@ public:
     void send_data() {
         uint8_t right = 0, up = 0, angle = 0;
         _sensor->getDirection(right, up);
-        if (right == 0 && up == 0) return;
+        // if (right == 0 && up == 0) return;
         _sensor->getAngle(angle);
         string sbuffer = to_string(right) + to_string(up) + to_string(PLAYER);
         const char * cbuffer = sbuffer.c_str();
-        int ret = _socket.send( cbuffer, strlen(cbuffer) );
+        // int ret = _socket.send( cbuffer, strlen(cbuffer) );
+        int ret = _socket.sendto( IP_ADDR, PORT_NUM, cbuffer, strlen(cbuffer) );
     } 
 
 private:
     WiFiInterface * _wifi;
-    TCPSocket       _socket;
+    UDPSocket       _socket;
     Sensor *        _sensor;
     events::EventQueue &_event_queue;
 };
