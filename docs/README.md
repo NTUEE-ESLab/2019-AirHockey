@@ -5,8 +5,6 @@
         * [Sensor (Accelerometer)](#sensor-(accelerometer))
         * [BLE](#ble)
         * [Wifi](#wifi)
-            * [TCP Socket](#tcp-socket)
-            * [UDP Socket](#udp-socket)
         * [Event Queue](#event-queue)
         * [Interruption](#interruption)
     * [RPi](#rpi)
@@ -29,7 +27,7 @@
 ### STM32
 #### Sensor (Accelerometer)
 Since acceleration is biased by approximately a constant value, calibration is done at the beginning to obtain the offset and is subtracted to get more precise values. For each timestep, STM32 sends the directions to RPi. We had tried sending acceleration, velocity, and displacement, and found that sending velocity is the best. We calculated the velocity by integrating the acceleration ([Riemann sum](https://en.wikipedia.org/wiki/Riemann_sum)), which is sampled every 1 - 2 ms. We also added a function such that if the player picks up the STM32 (changing the acceleration of Z-axis), STM32 will not update the values.  
-Since the sensor is sometimes inaccurate, and the direction of acceleration and velocity may become opposite while braking, we let the velocity decay exponentially in this situation. Moreover, if it is detected as braking, we omit the next k sampled values to prevent it from "bouncing" back. Nevertheless, despite the change we have made, from time to time it may still move toward the opposite direction.
+Since the sensor is sometimes inaccurate, and the direction of acceleration and velocity may become opposite while braking, we let the velocity decay exponentially in this situation. Moreover, if it is detected as braking, we omit the next k sampled values to prevent it from "bouncing" back. This method significantly improved the performance. Nevertheless, despite the change we have made, it may still moves toward the opposite direction sometimes.
 
 #### BLE
 We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it sometimes disconnects, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `./STM32LS75VG/ble/`.
