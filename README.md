@@ -3,9 +3,9 @@
 * Life is tiring and frustrating (especially for EE students). We need some entertainments!
 * A project that releases our pressure
 * Meets the requirements
-* Implement wifi socket programming
-* Use accelerometer in STM32
-* Assisted with RPi
+    * Implement wifi socket programming
+    * Use accelerometer in STM32
+    * Assisted with RPi
 * Interesting and competitive game!
 
 ## Implementation
@@ -15,7 +15,7 @@ Since acceleration is biased by approximately a constant value, calibration is d
 Since the sensor is not very accurate, and the direction of acceleration and velocity may inverse while the velocity is decreasing, we let the velocity decays very fast in this situation. Nevertheless, it may still move to the inverse direction sometimes.
 
 #### BLE
-We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it disconnects sometimes, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent  by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `STM32LS75VG/ble/`).
+We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it disconnects sometimes, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent  by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `[STM32LS75VG/ble/](./STM32LS75VG/ble/)`).
 
 #### Wifi
 * TCP Socket  
@@ -32,7 +32,7 @@ Although usually stable, the accelerometer and wifi sometimes malfunction while 
 
 ### RPi
 #### Game
-The code is based on the [airhockey repository](https://github.com/ross85/airhockey “airhockey”) by [ross85](https://githuv.com/ross85 “ross85”) and modified to accept data from STM32, which is written with `pygame`.
+The code is based on the [airhockey repository](https://github.com/ross85/airhockey) by [ross85](https://githuv.com/ross85) and modified to accept data from STM32, which is written with `pygame`.
 
 #### Threads
 Displaying the game and receiving data transmitted by STM32 in one single thread is not feasible since both tasks require a certain amount of time, thus delaying the other task. They must be handled simultaneously. This is made possible by applying 3 additional threads, which update the actions of the players, to increase the number of updates, while the main thread only displays the game. A timeout threshold of 0.3 ms is set to reduce the delay. Also, the received data are decoded by utf-8.
