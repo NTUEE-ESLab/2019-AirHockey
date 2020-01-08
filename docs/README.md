@@ -54,7 +54,8 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 
 ## Results
 ### Demo video
-* Link: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
+* Link: [https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing](https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing)
+
 ### 2 STM32s
 * Process and send velocities of themselves to RPi
 * Act as “strikers”
@@ -66,10 +67,10 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 
 ## References
 * ARM-MBED documents (sensors):  
-https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
-* airhockey: https://github.com/ross85/airhockey
+[https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/](https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/)
+* airhockey: [https://github.com/ross85/airhockey](https://github.com/ross85/airhockey)
 * UDP Socket  
-https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html  
-https://www.itread01.com/p/432886.html
+[https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html](https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html)  
+[https://www.itread01.com/p/432886.html](https://www.itread01.com/p/432886.html)
 
 
