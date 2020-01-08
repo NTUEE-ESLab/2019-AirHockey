@@ -8,7 +8,7 @@
 * Copy(replace) the files in `mbed-os` directory into `mbed-os-example-ble-HeartRate/mbed-os/features/FEATURE_BLE/`
 * Move `main.cpp` and `MyService.h` into project
 * Compile and write into two boards
-* Execute `main.py` in `2019-AirHockey/RPi/`
+* Execute `main.py` in `2019-AirHockey/RPi/`  
     $ sudo python3 main.py
 * Enjoy the game!
 
