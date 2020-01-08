@@ -1,7 +1,7 @@
 # 2019-AirHockey
 ## Motivation
 * Life is tiring and frustrating (especially for EE students). We need some entertainments!
-*A project that releases our pressure
+* A project that releases our pressure
 * Meets the requirements
 * Implement wifi socket programming
 * Use accelerometer in STM32
@@ -39,13 +39,13 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 
 ## Results
 ### 2 STM32s
-*Process and send velocities of themselves to RPi
-*Act as “strikers”
-*Press button to calibrating and connect
+* Process and send velocities of themselves to RPi
+* Act as “strikers”
+* Press button to calibrating and connect
 
 ### RPi 
-*Displays the game (locations of strickers, puck, and others)
-*Calculates the movements of the “puck”
+* Displays the game (locations of strickers, puck, and others)
+* Calculates the movements of the “puck”
 
 ## References
 * ARM-MBED documents (sensors): https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
