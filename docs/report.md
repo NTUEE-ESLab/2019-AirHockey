@@ -65,7 +65,8 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 * Calculates the movements of the “puck”
 
 ## References
-* ARM-MBED documents (sensors):  https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
+* ARM-MBED documents (sensors):  
+https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
 * airhockey: https://github.com/ross85/airhockey
 * UDP Socket  
 https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html  
