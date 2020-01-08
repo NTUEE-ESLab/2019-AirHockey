@@ -1,11 +1,24 @@
-A nice Air Hockey simulation between two players developed using Python and Pygame.
+# Raspberry Pi Setup
+* The code is based on the [airhockey repository](https://github.com/ross85/airhockey) by [ross85](https://github.com/ross85) and modified to accept data from STM32.
 
-This game was developed in 2008 for the Operative Systems class at the Universita' Cattolica del Sacro Cuore, Brescia, Italy.
+## Prequisites
+* BLE version: `bluepy`, `pygame`
+```
+$ pip3 install bluepy
+$ pip3 install pygame
+```
+* Wifi version: `pygame`
+```
+$ pip3 install pygame
+```
 
-This project has been on Google Code for several years, and since people have looked into it I decided to move it on github.
-
-I removed most of the comments because they were in Italian, sorry about that.
-
-I hope it can be useful for someone who has to work around university projects or just have fun.
-
-Enjoy.
+## How to Run
+In `src/` directory,
+   * To run BLE version
+   ```
+   $ sudo python3 main.py
+   ```
+   * To run Wifi version
+   ```
+   $ sudo python3 main-socket.py
+   ```
