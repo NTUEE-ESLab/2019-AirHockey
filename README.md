@@ -15,7 +15,7 @@ Since acceleration is biased by approximately a constant value, calibration is d
 Since the sensor is not very accurate, and the direction of acceleration and velocity may inverse while the velocity is decreasing, we let the velocity decays very fast in this situation. Nevertheless, it may still move to the inverse direction sometimes.
 
 #### BLE
-We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it disconnects sometimes, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent  by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in [here](./tree/master/STM32LS75VG/ble/)).
+We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it disconnects sometimes, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent  by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `./STM32LS75VG/ble/`.
 
 #### Wifi
 * TCP Socket  
