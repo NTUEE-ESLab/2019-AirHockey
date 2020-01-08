@@ -19,7 +19,7 @@ actions = [ [0, 0, 0], [0, 0, 0] ]
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.settimeout(0.0003)
-server.bind(('192.168.0.15', 6688))
+server.bind(('172.20.10.6', 6688))
 #server.listen(5)
 #connect, (host, port) = server.accept()
 '''
@@ -29,12 +29,34 @@ while 1:
 	data = data.decode('utf-8')
 	print([data[0], data[1], data[2]])
 '''
-'''
-def update(data):
+
+def update():
+	'''
 	player = int(data[2])
 	actions[player][0] = int(data[0])
 	actions[player][1] = int(data[1])
-'''
+	'''
+	while 1:
+		#x1 = y1 = x2 = y2 = 0
+		if pygame.key.get_pressed()[K_ESCAPE]:
+			print(num)
+			sys.exit()
+		
+		try:
+			data, (remoteHost, remortPort) = server.recvfrom(12)
+			data = data.decode('utf-8').split(',')
+			player = int(data[2][0])
+			x = int(data[0])
+			y = int(data[1])
+			if x > 128: x -= 256
+			if y > 128: y -= 256
+			actions[player][0] = x
+			actions[player][1] = y
+
+		except socket.timeout:
+			pass
+			
+
 def init(angle=0):
 	player1.set_pos_xy(PLAYER1_START)
 	player1.set_speed_magnitude(0)
@@ -50,13 +72,15 @@ def init(angle=0):
 '''
 def get_action0():
 	data = connect.recv(3).decode('utf-8')
+	data, (remoteHost, remortPort) = server.recvfrom(12)
+			data = data.decode('utf-8').split(',')
+			if data[2][0] == '0':
 	updata(data)
 
 def get_action1():
 	while 1:
 		pass
-'''		
-			
+'''			
 def game():
 
 	init()
@@ -75,20 +99,42 @@ def game():
 			print(num)
 			sys.exit()
 		
+		'''
+		x1 = x2 = y1 = y2 = 0
 		#data = connect.recv(3).decode('utf-8')
 		try:
-			data, (remoteHost, remortPort) = server.recvfrom(3)
-			data = data.decode('utf-8')
-		except socket.timeout:
-			data = '000'
-		if data[0] == '1': x1 = 1.0
-		elif data[0] == '2': x1 = -1.0
-		else: x1 = 0.0
-		if data[1] == '1': y1 = 1.0
-		elif data[1] == '2': y1 = -1.0
-		else: y1 = 0.0
+			data, (remoteHost, remortPort) = server.recvfrom(12)
+			data = data.decode('utf-8').split(',')
+			if data[2][0] == '0':
+				#if data[0] == '1': x1 = 1.0
+				#elif data[0] == '2': x1 = -1.0
+				#else: x1 = 0.0
+				#if data[1] == '1': y1 = 1.0
+				#elif data[1] == '2': y1 = -1.0
+				#else: y1 = 0.0
+				x1 = int(data[0])
+				if x1 > 128:
+					x1 -= 256
+				y1 = int(data[1])
+				if y1 > 128:
+					y1 -= 256
+			
+			data, (remoteHost, remortPort) = server.recvfrom(12)
+			data = data.decode('utf-8').split(',')
+			if data[2][0] == '1':
+				x2 = int(data[0])
+				if x2 > 128:
+					x2 -= 256
+				y2 = int(data[1])
+				if y2 > 128:
+					y2 -= 256
+			
 		
-		x2, y2 = actions[1][0], actions[1][1]
+		except socket.timeout:
+			x1 = x2 = y1 = y2 = 0
+		'''
+		x1, y1, x2, y2 = actions[0][0], actions[0][1], actions[1][0], actions[1][1]
+
 		if keys[ K_SPACE]: break
 		
 		dt = clock.tick(200)#(FPS)
@@ -229,11 +275,22 @@ select_time = SELECT_TIME
 select_time_label = font1.render(select_time, 1, (0,0,0))
 instruction = INSTRUCTION
 instruction_label = font1.render(instruction, 1, (0,0,0))
-'''t0 = threading.Thread(target = get_action0)
+
+'''
+t0 = threading.Thread(target = get_action0)
 t1 = threading.Thread(target = get_action1)
 t0.start()
 t1.start()
 '''
+
+t0 = threading.Thread( target = update )
+t0.start()
+
+t1 = threading.Thread( target = update )
+t1.start()
+
+t2 = threading.Thread( target = update )
+t2.start()
 while 1:
 	screen.blit( bg, (0,0))
 	screen.blit(title_game_label,(WIDTH*0.5-title_game_label.get_width()*0.5,200))
