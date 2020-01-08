@@ -10,7 +10,7 @@
 ```$ pip3 install pygame```
 
 #### STM32L475
-* See `STM32L475/ble/README.md`
+* See [`STM32L475VG/ble/README.md`](./STM32L475VG/ble/README.md)
 
 ## Wifi version
 ### Setup & Installation
@@ -19,5 +19,5 @@
 ```$ pip3 install pygame```
 
 #### STM32L475
-* See `STM32L475/wifi/README.md`
+* See [`STM32L475VG/wifi/README.md`](./STM32L475VG/wifi/README.md)
 
