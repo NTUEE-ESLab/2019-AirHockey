@@ -23,11 +23,13 @@ Serial pc(USBTX, USBRX);
 InterruptIn button(USER_BUTTON);
 
 
-#define IP_ADDR     "192.168.0.15"
+#define IP_ADDR     "172.20.10.6"
 #define PORT_NUM    6688
 #define SEND_INT    1
 #define SAMPLE_RATE 2
-#define PLAYER      0
+#define PLAYER      1
+// #define DRUNK
+// #define USE_ANGLE
 
 static events::EventQueue event_queue(/* event count */ 16 * EVENTS_EVENT_SIZE);
 
@@ -44,22 +46,29 @@ public:
 
     void calculate(float * pGyroDataXYZ, int16_t * pAccDataXYZ) {
         for (int i = 0; i < 3; ++i) {
-            float v = _velocity[i];
+            #ifndef DRUNK
+            if (_k[i] > 0) { 
+                _velocity[i] *= 0.3; 
+                --_k[i]; continue; 
+            }
+            #endif // DRUNK
+            #ifdef USE_ANGLE
             if (abs(pGyroDataXYZ[i]) > 15)
                 _angle[i] += (pGyroDataXYZ[i] + _GyroAccumulate[i]) / 2 * TIMESTEP * SCALE_MULTIPLIER;
-            if (abs(pAccDataXYZ[i]) > 3 /*&& pAccDataXYZ[i] * _velocity[i] >= 0*/) {
-                _velocity[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP;
-                _position[i] = (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP * TIMESTEP / 2;
-            } else _velocity[i] *= 0.5;
+            #endif // USE_ANGLE
 
+            float v = _velocity[i];
+            if (abs(pAccDataXYZ[i]) > 3 /*&& pAccDataXYZ[i] * _velocity[i] >= 0*/)
+                _velocity[i] += (pAccDataXYZ[i] + _AccAccumulate[i]) / 2 * TIMESTEP;
+            else {
+                _velocity[i] *= 0.5;
+                if (abs(v) > 1)
+                    _k[i] = 25;
+            }
 
             if (v * _velocity[i] < 0)
                 _velocity[i] = 0;
-
-            // if (abs(pAccDataXYZ[i] - AccAccumulate[i]) < 2)
-            //     velocity[i] = 0;
             
-            _position[i] += _velocity[i] * TIMESTEP;
         }
         if (abs(pAccDataXYZ[2]) > 10)
             _velocity[0] = _velocity[1] = 0;
@@ -93,7 +102,7 @@ public:
             _GyroOffset[i] /= num;
             _AccOffset[i] /= num;
 
-            _angle[i] = _velocity[i] = _position[i] = _pAccDataXYZ[i] = _pGyroDataXYZ[i] = 0;
+            _angle[i] = _velocity[i] = _pAccDataXYZ[i] = _pGyroDataXYZ[i] = 0;
         }
 
 
@@ -105,13 +114,6 @@ public:
     }
 
     void update() {
-        // pc.printf("Waiting at Sensors::update...\n");
-        // sem.wait();
-        // pc.printf("Enter Sensors::update\n");
-        // pc.printf("Start updating...\n");
-        // socket.set_blocking(1);
-
-
         ++_sample_num;
 
         BSP_GYRO_GetXYZ(_pGyroDataXYZ);
@@ -120,61 +122,13 @@ public:
             _pGyroDataXYZ[i] = (_pGyroDataXYZ[i] - _GyroOffset[i]) * SCALE_MULTIPLIER;
             _pAccDataXYZ[i] = _pAccDataXYZ[i] - _AccOffset[i];
         }
-
-        // if (0) {
-        if (_sample_num % 100 == 0) {
-            // pc.printf("\nGYRO_X = %.2f\n", pGyroDataXYZ[0]);
-            // pc.printf("GYRO_Y = %.2f\n", pGyroDataXYZ[1]);
-            // pc.printf("GYRO_Z = %.2f\n", pGyroDataXYZ[2]);
-
-            // pc.printf("\nANGLE_X = %f\n", angle[0]);
-            // pc.printf("ANGLE_Y = %f\n", angle[1]);
-            pc.printf("ANGLE_Z = %f\n", _angle[2]);
-
-            // pc.printf("\nACCELERO_X = %d\n", pAccDataXYZ[0]);
-            // pc.printf("ACCELERO_Y = %d\n", pAccDataXYZ[1]);
-            // pc.printf("ACCELERO_Z = %d\n", pAccDataXYZ[2]);
-
-            // pc.printf("\nVELOCITY_X = %f\n", velocity[0]);
-            // pc.printf("VELOCITY_Y = %f\n", velocity[1]);
-            // pc.printf("VELOCITY_Z = %f\n", velocity[2]);
-
-            // pc.printf("\nPOSITION_X = %f\n", position[0]);
-            // pc.printf("POSITION_Y = %f\n", position[1]);
-            // pc.printf("POSITION_Z = %f\n", position[2]);
-        }
-
-        if (_sample_num % 100 == 0) {
-            if (abs(_velocity[0]) > 1) {
-                if (_velocity[0] > 0)
-                    pc.printf("%5s ", "back");
-                else pc.printf("%5s ", "front");
-            } else pc.printf("still ");
-
-            if (abs(_velocity[1]) > 1) {
-                if (_velocity[1] > 0)
-                    pc.printf("%5s\n", "right");
-                else pc.printf("%5s\n", "left");
-            } else pc.printf("still\n");
-
-            pc.printf("\n");
-        }
         
         wait(TIMESTEP);
     
         calculate(_pGyroDataXYZ, _pAccDataXYZ);
-
-        _accumulateAcc[0] += _velocity[0];
-        _accumulateAcc[1] += _velocity[1];
-
-        // sem.release();
-        // pc.printf("Release sem at Sensors::udpate\n");
     }
 
     void getDirection(uint8_t& right, uint8_t& up) {
-        // if (sample_num % 100 == 0) 
-        // pc.printf("In Sensors::getDirection...\n");
-        
         /* up or down */
         if (abs(_velocity[0]) > 1) {
             if (_velocity[0] < 0) {
@@ -207,13 +161,8 @@ public:
 
         pc.printf("\n");
         
-        // }
-        // up = (uint8_t)(_velocity[0]);
-        // right = (uint8_t)(_velocity[1]);
-        // up = (uint8_t) _accumulateAcc[0];
-        // right = (uint8_t) _accumulateAcc[1];
-        
-        _accumulateAcc[0] = _accumulateAcc[1] = 0;
+        up = (uint8_t)(_velocity[0]);
+        right = (uint8_t)(_velocity[1]);
 
         pc.printf("send: %d %d\n", up, right);
 
@@ -227,7 +176,7 @@ public:
 private:
     float _angle[3] = {};
     float _velocity[3] = {};
-    float _position[3] = {};
+    int   _k[3] = {};
 
     float _GyroAccumulate[3] = {};
     float _AccAccumulate[3] = {};
@@ -239,8 +188,6 @@ private:
     int   _AccOffset[3] = {};
     float _GyroOffset[3] = {};
 
-    int16_t _accumulateAcc[2] = {};
-
     events::EventQueue &_event_queue;
 };
 
@@ -248,7 +195,7 @@ private:
 
 class Wifi {
 public:
-    Wifi( Sensor * sensor, events::EventQueue &event_queue ): _sensor(sensor), _event_queue(event_queue) 
+    Wifi( Sensor * sensor, events::EventQueue &event_queue ): _sensor(sensor), _event_queue(event_queue), _led1(LED1, 1) 
     { connect(); }
 
     void connect() {
@@ -291,6 +238,11 @@ public:
         pc.printf("Connected to IP: %s, Port: %d", IP_ADDR, PORT_NUM);
 
         _event_queue.call_every(SEND_INT, this, &Wifi::send_data);
+        _event_queue.call_every(500, this, &Wifi::blink);
+    }
+
+    void blink() {
+        _led1 = !_led1;
     }
 
     ~Wifi() {
@@ -301,11 +253,11 @@ public:
     void send_data() {
         uint8_t right = 0, up = 0, angle = 0;
         _sensor->getDirection(right, up);
-        // if (right == 0 && up == 0) return;
+        #ifdef USE_ANGLE
         _sensor->getAngle(angle);
-        string sbuffer = to_string(right) + to_string(up) + to_string(PLAYER);
+        #endif // USE_ANGLE
+        string sbuffer = to_string(right) + "," + to_string(up) + "," + to_string(PLAYER);
         const char * cbuffer = sbuffer.c_str();
-        // int ret = _socket.send( cbuffer, strlen(cbuffer) );
         int ret = _socket.sendto( IP_ADDR, PORT_NUM, cbuffer, strlen(cbuffer) );
     } 
 
@@ -313,6 +265,7 @@ private:
     WiFiInterface * _wifi;
     UDPSocket       _socket;
     Sensor *        _sensor;
+    DigitalOut      _led1;
     events::EventQueue &_event_queue;
 };
 
@@ -323,7 +276,7 @@ Wifi wifi(&sensor, event_queue);
 
 void reset() {
     event_queue.call(callback(&sensor, &Sensor::calibrate));
-    // event_queue.call(callback(&wifi  , &Wifi::connect));
+    event_queue.call(callback(&wifi  , &Wifi::connect));
 }
 
 int main()
