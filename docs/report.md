@@ -53,7 +53,8 @@ The code is based on the [airhockey repository](https://github.com/ross85/airhoc
 Displaying the game and receiving data transmitted by STM32 in one single thread is not feasible since both tasks require a certain amount of time, thus delaying the other task. They must be handled simultaneously. This is made possible by applying 3 additional threads, which update the actions of the players, to increase the number of updates, while the main thread only displays the game. A timeout threshold of 0.3 ms is set to reduce the delay. Also, the received data are decoded by utf-8.
 
 ## Results
-* Demo video: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
+### Demo video
+* Link: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
 ### 2 STM32s
 * Process and send velocities of themselves to RPi
 * Act as “strikers”
@@ -64,7 +65,7 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 * Calculates the movements of the “puck”
 
 ## References
-* ARM-MBED documents (sensors): https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
+* ARM-MBED documents (sensors):  https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
 * airhockey: https://github.com/ross85/airhockey
 * UDP Socket  
 https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html  
