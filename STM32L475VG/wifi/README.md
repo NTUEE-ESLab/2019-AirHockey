@@ -26,7 +26,7 @@
     }
 }
 ```
-* Compile and write into two boards
+* Compile and write into two boards (remember to give two boards different PLAYER values (0 or 1)!)
 * Execute `main-socket.py` in `2019-AirHockey/RPi/`  
 ```$ sudo python3 main-socket.py```
 * Enjoy the game!
