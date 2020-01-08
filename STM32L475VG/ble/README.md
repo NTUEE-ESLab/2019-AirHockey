@@ -10,5 +10,5 @@
 * Compile and write into two boards
 * Execute `main.py` in `2019-AirHockey/RPi/`
     $ sudo python3 main.py
-* Play game!!
+* Enjoy the game!
 
