@@ -53,7 +53,7 @@ The code is based on the [airhockey repository](https://github.com/ross85/airhoc
 Displaying the game and receiving data transmitted by STM32 in one single thread is not feasible since both tasks require a certain amount of time, thus delaying the other task. They must be handled simultaneously. This is made possible by applying 3 additional threads, which update the actions of the players, to increase the number of updates, while the main thread only displays the game. A timeout threshold of 0.3 ms is set to reduce the delay. Also, the received data are decoded by utf-8.
 
 ## Results
-* Demo video: 
+* Demo video: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
 ### 2 STM32s
 * Process and send velocities of themselves to RPi
 * Act as “strikers”
