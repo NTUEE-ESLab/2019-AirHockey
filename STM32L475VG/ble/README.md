@@ -9,6 +9,6 @@
 * Move `main.cpp` and `MyService.h` into project
 * Compile and write into two boards
 * Execute `main.py` in `2019-AirHockey/RPi/`  
-    $ sudo python3 main.py
+```$ sudo python3 main.py```
 * Enjoy the game!
 
