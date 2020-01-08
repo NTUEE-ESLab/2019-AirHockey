@@ -1,4 +1,21 @@
 # 2019-AirHockey
+* [Motivation](#motivation)
+* [Implementation](#implementation)
+    * [STM32](stm32)
+        * [Sensor (Accelerometer)](#sensor-(accelerometer))
+        * [BLE](#ble)
+        * [Wifi](#wifi)
+            * [TCP Socket](#tcp-socket)
+            * [UDP Socket](#udp-socket)
+        * [Event Queue](#event-queue)
+        * [Interruption](#interruption)
+    * [RPi](#rpi)
+        * [Game](#game)
+        * [Threads](#threads)
+* [Results](#results)
+* [References](#references)
+
+
 ## Motivation
 * Life is tiring and frustrating (especially for EE students). We need some entertainments!
 * A project that releases our pressure
@@ -11,17 +28,17 @@
 ## Implementation
 ### STM32
 #### Sensor (Accelerometer)
-Since acceleration is biased by approximately a constant value, calibration is done at the beginning to obtain the offset and is subtracted to get more precise values. For each timestep, STM32 sends the directions to RPi. We had tried sending acceleration, velocity, and displacement, and found that sending velocity is the best. We calculated the velocity by integrating the acceleration (Riemann sum), which is sampled every 1 - 2 ms. We also added a function such that if the player picks up the STM32 (changing the acceleration of Z-axis), STM32 will not update the values.  
-Since the sensor is not very accurate, and the direction of acceleration and velocity may inverse while the velocity is decreasing, we let the velocity decays very fast in this situation. Nevertheless, it may still move to the inverse direction sometimes.
+Since acceleration is biased by approximately a constant value, calibration is done at the beginning to obtain the offset and is subtracted to get more precise values. For each timestep, STM32 sends the directions to RPi. We had tried sending acceleration, velocity, and displacement, and found that sending velocity is the best. We calculated the velocity by integrating the acceleration ([Riemann sum](https://en.wikipedia.org/wiki/Riemann_sum)), which is sampled every 1 - 2 ms. We also added a function such that if the player picks up the STM32 (changing the acceleration of Z-axis), STM32 will not update the values.  
+Since the sensor is sometimes inaccurate, and the direction of acceleration and velocity may become opposite while braking, we let the velocity decay exponentially in this situation. Moreover, if it is detected as braking, we omit the next k sampled values to prevent it from "bouncing" back. Nevertheless, despite the change we have made, from time to time it may still move toward the opposite direction.
 
 #### BLE
-We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it disconnects sometimes, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent  by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `./STM32LS75VG/ble/`.
+We first tried using BLE to connect the devices. STM32 sends 3 bytes to RPi, indicating right or left, up or down, and the ID of the player respectively. However, the performance does not reach our expectations: it sometimes disconnects, displays slowly, and is difficult to control. The problem lies in the huge delay of BLE: we discovered that for every 20 messages sent by notification, only 1 is received. This huge delay is intolerable, hence we abandoned this method (while the code is still in `./STM32LS75VG/ble/`.
 
 #### Wifi
-* TCP Socket  
+* **TCP Socket**  
 To ameliorate the problem of delay, we tried communicating via TCP socket. Given that TCP guarantees reliable transmission, if a message is not received by the receiver, the sender is required to resend it. However, this is not suitable for real-time systems, e.g. games. In our experiment, the program often froze since it was waiting for data that should be received earlier to arrive, which made the game unplayable.
 
-* UDP Socket  
+* **UDP Socket**  
 Due to the above reasons and that all data sent by STM32 are not necessarily needed, UDP socket is a better choice. With UDP socket, the program did not suffer from stalling and achieved a higher data transmission rate compared to BLE. Although there still exists a minor delay, the result appears to be more stable and more controllable. Hence, this implementation performs best among all the others.
 
 #### Event Queue
@@ -38,13 +55,14 @@ The code is based on the [airhockey repository](https://github.com/ross85/airhoc
 Displaying the game and receiving data transmitted by STM32 in one single thread is not feasible since both tasks require a certain amount of time, thus delaying the other task. They must be handled simultaneously. This is made possible by applying 3 additional threads, which update the actions of the players, to increase the number of updates, while the main thread only displays the game. A timeout threshold of 0.3 ms is set to reduce the delay. Also, the received data are decoded by utf-8.
 
 ## Results
+* Demo video: 
 ### 2 STM32s
 * Process and send velocities of themselves to RPi
 * Act as “strikers”
-* Press button to calibrating and connect
+* Press button to recalibrate and reconnect
 
 ### RPi 
-* Displays the game (locations of strickers, puck, and others)
+* Displays the game (locations of strikers, puck, and others)
 * Calculates the movements of the “puck”
 
 ## References
