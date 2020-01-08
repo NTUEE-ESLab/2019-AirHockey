@@ -3,9 +3,9 @@
 ### Life is tiring and frustrating (especially for EE students). We need some entertainments!
 ### A project that releases our pressure
 ### Meets the requirements
-#### Implement wifi socket programming
-#### Use accelerometer and gyroscope in STM32
-#### Assisted with RPi
+Implement wifi socket programming
+Use accelerometer and gyroscope in STM32
+Assisted with RPi
 ### Interesting and competitive game!
 
 ## Method
