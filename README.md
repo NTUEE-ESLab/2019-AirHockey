@@ -4,8 +4,8 @@
     * [Raspberry Pi](#raspberry-pi-1)
     * [STM32L475](#stm32l475-1)
         * [Prerequisites](#prerequisites)
-        * [BLE version](#ble-version)
-        * [Wifi version](#wifi-version)
+        * [BLE version](#ble-version-1)
+        * [Wifi version](#wifi-version-1)
 * [How to Run](#how-to-run)
     * [Raspberry Pi](#raspberry-pi-2)
         * [BLE version](#ble-version-2)
@@ -91,10 +91,10 @@ After the commands are executed, you may enter the starting menu.
 Enter `1`, `3`, or `5` to start the game (for 1, 3, or 5 minutes respectively).  
 Press `Esc` to exit the game.  
 
-## Screenshots and Demo
-* Starting menu
-* In game
-* One player wins
+## Screenshots & Demo
+* Starting menu ![](./resources/menu.png)
+* In game ![](./resources/in_game.png)
+* Player wins ![](./resources/score.png)
 * Demo video: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
 
 ## References
