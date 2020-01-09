@@ -98,10 +98,11 @@ Press `Esc` to exit the game.
 * Demo video: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
 
 ## References
-* ARM-MBED documents (sensors):  
+* ARM-MBED documents (sensors)  
 https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
-* airhockey: https://github.com/ross85/airhockey
-* UDP Socket
+* airhockey  
+https://github.com/ross85/airhockey
+* UDP Socket  
 https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html
 https://www.itread01.com/p/432886.html
 
