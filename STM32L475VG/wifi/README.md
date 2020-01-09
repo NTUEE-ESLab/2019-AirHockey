@@ -5,7 +5,7 @@
 * Add sensor library to project (link: http://developer.mbed.org/teams/ST/code/BSP_B-L475E-IOT01/#bfe8272ced90)
 
 ## How to Install
-* Move `main.cpp` and into project
+* Move `main.cpp` into project
 * Substitute ssid and password in code below and copy it to `mbed_app.json` under project
 ```
 {
