@@ -1,4 +1,7 @@
 # 2019-AirHockey
+
+![](./resources/air_hockey.png)
+
 * [Overview](#overview)
 * [Setup & Installation](#setup-&-installation)
     * [Raspberry Pi](#raspberry-pi-1)
@@ -94,7 +97,7 @@ Press `Esc` to exit the game.
 ## Screenshots & Demo
 * Starting menu ![](./resources/menu.png)
 * In game ![](./resources/in_game.png)
-* Player wins ![](./resources/score.png)
+* Player scores ![](./resources/score.png)
 * Demo video: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
 
 ## References

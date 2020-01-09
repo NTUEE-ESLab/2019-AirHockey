@@ -1,6 +1,10 @@
 # 2019-AirHockey
+
+![](./resources/air_hockey.png)
+
 * [Motivation](#motivation)
 * [Implementation](#implementation)
+    * [Architecture](#architecture)
     * [STM32](stm32)
         * [Sensor (Accelerometer)](#sensor-(accelerometer))
         * [BLE](#ble)
@@ -24,6 +28,8 @@
 * Interesting and competitive game!
 
 ## Implementation
+### Architecture
+![](./resources/architecture.png)
 ### STM32
 #### Sensor (Accelerometer)
 Since acceleration is biased by approximately a constant value, calibration is done at the beginning to obtain the offset and is subtracted to get more precise values. For each timestep, STM32 sends the directions to RPi. We had tried sending acceleration, velocity, and displacement, and found that sending velocity is the best. We calculated the velocity by integrating the acceleration ([Riemann sum](https://en.wikipedia.org/wiki/Riemann_sum)), which is sampled every 1 - 2 ms. We also added a function such that if the player picks up the STM32 (changing the acceleration of Z-axis), STM32 will not update the values.  
@@ -53,8 +59,6 @@ The code is based on the [airhockey repository](https://github.com/ross85/airhoc
 Displaying the game and receiving data transmitted by STM32 in one single thread is not feasible since both tasks require a certain amount of time, thus delaying the other task. They must be handled simultaneously. This is made possible by applying 3 additional threads, which update the actions of the players, to increase the number of updates, while the main thread only displays the game. A timeout threshold of 0.3 ms is set to reduce the delay. Also, the received data are decoded by utf-8.
 
 ## Results
-### Demo video
-* Link: [https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing](https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing)
 
 ### 2 STM32s
 * Process and send velocities of themselves to RPi
@@ -65,12 +69,21 @@ Displaying the game and receiving data transmitted by STM32 in one single thread
 * Displays the game (locations of strikers, puck, and others)
 * Calculates the movements of the “puck”
 
+### Demo video
+* Link: https://drive.google.com/file/d/1DMVhMzvl215tsdMatFl2ZeyUQp4JkgY9/view?usp=sharing
+
+### Screenshots
+* Starting menu ![](./resources/menu.png.)
+* In game ![](./resoures/in_game.png)
+* Player scores ![](./resources/score.png)
+
 ## References
 * ARM-MBED documents (sensors):  
-[https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/](https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/)
-* airhockey: [https://github.com/ross85/airhockey](https://github.com/ross85/airhockey)
+https://os.mbed.com/teams/ST/code/DISCO_L475VG_IOT01-Sensors-BSP/file/986c1f5db128/main.cpp/
+* airhockey  
+https://github.com/ross85/airhockey
 * UDP Socket  
-[https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html](https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html)  
-[https://www.itread01.com/p/432886.html](https://www.itread01.com/p/432886.html)
+https://os.mbed.com/docs/mbed-os/v5.9/reference/udpsocket.html
+https://www.itread01.com/p/432886.html
 
 
